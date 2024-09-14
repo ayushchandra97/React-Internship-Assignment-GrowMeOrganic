@@ -3,7 +3,7 @@
 This is an internship assignment for GrowMeOrganic using React + Vite using TypeScript and Primereact DataTable and Paginator.
 
 ## Hosted on Netlify
-The website is hosted on [https://react-typescript-table.netlify.app/]
+The website is hosted on https://react-typescript-table.netlify.app/
 
 ## How to Run the Code Locally
 
