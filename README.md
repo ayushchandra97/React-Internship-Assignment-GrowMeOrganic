@@ -1,50 +1,58 @@
-# React + TypeScript + Vite
+# React Internship Assignment GrowMeOrganic
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is an internship assignment for GrowMeOrganic using React + Vite using TypeScript and Primereact DataTable and Paginator.
 
-Currently, two official plugins are available:
+## Hosted on Netlify
+The website is hosted on [https://](https://react-typescript-table.netlify.app/)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## How to Run the Code Locally
 
-## Expanding the ESLint configuration
+Follow these steps to run the project on your local machine:
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### 1. Clone the repository
+First, clone the repository to your local machine using the following command:
 
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+git clone git@github.com:ayushchandra97/React-Internship-Assignment-GrowMeOrganic.git
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+### 
+Sure! Here’s an example README.md for your React Assignment:
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+md
+Copy code
+# React Assignment
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+This repository contains a React project built using PrimeReact components. The purpose of this project is to demonstrate how to use a DataTable with pagination, selection, and other UI features.
+
+## How to Run the Code Locally
+
+Follow these steps to run the project on your local machine:
+
+### 1. Clone the repository
+First, clone the repository to your local machine using the following command:
+
+```bash
+git clone <repository-url>
+```
+
+### 2. Navigate to the project directory
+Change into the directory of the cloned project:
+
+```bash
+cd React-Internship-Assignment-GrowMeOrganic
+```
+
+### 3. Install dependencies
+Install the necessary dependencies using npm:
+
+```bash
+npm install
+```
+
+### 4. Start the development server
+Run the following command to start the development server:
+
+```bash
+npm run dev
 ```

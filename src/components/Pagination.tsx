@@ -8,16 +8,12 @@ interface props {
 }
 
 function Pagination({ totalRecords, setPage, page }: props) {
-    const [first, setFirst] = useState<number>(0)
     const [rowsPerPage, setRowsPerPage] = useState(12)
     
-    const onPageChange = (event: PaginatorPageChangeEvent) => {
-        setFirst(event.first);
+    function onPageChange (event: PaginatorPageChangeEvent) {
         setRowsPerPage(event.rows)
         setPage(event.page)
-    };
-    console.log(first)
-    
+    }
     return (
         <div className="card">
             <Paginator first={page * rowsPerPage} rows={rowsPerPage} totalRecords={totalRecords} onPageChange={onPageChange} />

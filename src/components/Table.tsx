@@ -2,6 +2,7 @@
 import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
 import { OverlayPanel } from 'primereact/overlaypanel'
+import { Skeleton } from 'primereact/skeleton'
 import { useState, useEffect, useRef } from 'react'
 import Pagination from './Pagination'
 import down_icon from '../assets/chevron-down.svg'
@@ -19,6 +20,7 @@ interface Row {
 
 function Table() {
 
+    const [loading, setLoading] = useState<boolean>(true)
     const [rows, setRows] = useState<Row[]>([])
     const [page, setPage] = useState(0)
     const [selectedRows, setSelectedRows] = useState<Row[] | null>(null)
@@ -32,16 +34,16 @@ function Table() {
         const resData = await res.json()
         setRows(resData.data)
         setTotalRecords(parseInt(resData.pagination.total))
+        setLoading(false)
     }
 
     async function submitHandler(totalRows: number): Promise<void> {
         const totalPagesToFetch = Math.ceil(totalRows / 12)
-        console.log('total pages to fetch: ', totalPagesToFetch)
         let res, resData, data
         let tempArr: object[] = []
         const allRows: object[] = []
         if (selectedRows !== null) {
-            tempArr = selectedRows.slice()
+            tempArr = [...selectedRows]
         }
         for (let i = 0; i < totalPagesToFetch; i++) {
             res = await fetch(`https://api.artic.edu/api/v1/artworks?page=${i + 1}`)
@@ -51,7 +53,7 @@ function Table() {
                 if (allRows.length < totalRows) {
                     allRows.push(element)
                 }
-            });
+            })
         }
 
         for (let i = 0; i < allRows.length; i++) {
@@ -80,11 +82,19 @@ function Table() {
         setSelectedRows(updatedSelection)
     }
 
+    function inputHandler (e: React.ChangeEvent<HTMLInputElement>) {
+        if (parseInt(e.target.value) <= 0) {
+            setInput('1')
+        } else {
+            setInput(e.target.value)
+        }
+    }
+
     useEffect(() => {
+        setLoading(true)
         fetchTableData(page)
     }, [page])
 
-    console.log('selected rows: ', selectedRows)
 
     const titleHeader = (
         <div className='title-header'>
@@ -94,7 +104,7 @@ function Table() {
             </button>
             <OverlayPanel ref={op} >
                 <div className='input-container'>
-                    <input type='number' value={input} onChange={e => setInput(e.target.value)} placeholder='Select rows...' />
+                    <input type='number' value={input} onChange={inputHandler} placeholder='Select rows...' />
                     <button onClick={() => submitHandler(parseInt(input))}>Submit</button>
                 </div>
             </OverlayPanel>
@@ -111,18 +121,19 @@ function Table() {
             dataKey="id" 
             scrollable 
             scrollHeight="flex"
-            tableStyle={{ minWidth: '50rem' }}>
-                <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
-                <Column field="title" header={titleHeader}></Column>
-                <Column field="place_of_origin" header="Place Of Origin"></Column>
-                <Column field="artist_display" header="Artist Display"></Column>
-                <Column field="inscriptions" header="Inscriptions"></Column>
-                <Column field="date_start" header="Date Start"></Column>
-                <Column field="date_end" header="Date End"></Column>
+            tableStyle={{ minWidth: '50rem' }}
+            emptyMessage={loading ? <Skeleton /> : 'No data found'}>
+                <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} body={<Skeleton />}></Column>
+                <Column field="title" header={titleHeader} body={loading ? <Skeleton width="10rem" /> : undefined}></Column>
+                <Column field="place_of_origin" header="Place Of Origin" body={loading ? <Skeleton /> : undefined}></Column>
+                <Column field="artist_display" header="Artist Display" body={loading ? <Skeleton /> : undefined}></Column>
+                <Column field="inscriptions" header="Inscriptions" body={loading ? <Skeleton /> : undefined}></Column>
+                <Column field="date_start" header="Date Start" body={loading ? <Skeleton /> : undefined}></Column>
+                <Column field="date_end" header="Date End" body={loading ? <Skeleton /> : undefined}></Column>
             </DataTable>
             <Pagination totalRecords={totalRecords} page={page} setPage={setPage} />
         </>
     )
 }
 
-export default Table;
+export default Table
