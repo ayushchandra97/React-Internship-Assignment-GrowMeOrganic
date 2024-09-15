@@ -63,21 +63,26 @@ function Table() {
         }
     }
 
-    const spanSelectedRowsAcrossPages = useCallback( () => {
+    const spanSelectedRowsAcrossPages = useCallback(() => {
         if (rowsToSelect === 0) {
             return
         }
         const newSelectedRows: Row[] = []
         rows.forEach(row => {
-            if ( row.index < rowsToSelect) {
+            if (row.index < rowsToSelect) {
                 newSelectedRows.push(row)
-            } else if ( row.index >= rowsToSelect) {
+            }
+            if (row.index >= rowsToSelect - 1) {
                 setRowsToSelect(0)
             }
         })
-        const prevSelectedRows = selectedRows?.slice() || []
-        setSelectedRows([...prevSelectedRows, ...newSelectedRows])
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        const prevRows = selectedRows || []
+        const combinedRows = [...prevRows, ...newSelectedRows]
+        const uniqueRows = Array.from(new Set(combinedRows.map(row => row.index)))
+            .map(index => combinedRows.find(row => row.index === index) as Row)
+
+        setSelectedRows(uniqueRows)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [rowsToSelect, rows])
 
     useEffect(() => {
@@ -87,7 +92,7 @@ function Table() {
 
     useEffect(() => {
         spanSelectedRowsAcrossPages()
-    },[spanSelectedRowsAcrossPages])
+    }, [spanSelectedRowsAcrossPages])
 
     const titleHeader = (
         <div className='title-header'>
@@ -103,8 +108,6 @@ function Table() {
             </OverlayPanel>
         </div>
     )
-
-    console.log('selected rows are: ', selectedRows)
 
     return (
         <>
