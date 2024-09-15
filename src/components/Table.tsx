@@ -28,6 +28,8 @@ function Table() {
     const [totalRecords, setTotalRecords] = useState(1)
     const [input, setInput] = useState<string>('')
     const [rowsToSelect, setRowsToSelect] = useState<number>(0)
+    const [avoidList, setAvoidList] = useState<number[]>([])
+    const [count, setCount] = useState(0)
 
     const op = useRef<OverlayPanel>(null)
 
@@ -70,10 +72,17 @@ function Table() {
         const newSelectedRows: Row[] = []
         rows.forEach(row => {
             if (row.index < rowsToSelect) {
+                if (avoidList.includes(row.index)) {
+                    return
+                }
                 newSelectedRows.push(row)
+                setAvoidList(prev => [...prev, row.index])
+                setCount(prev => prev + 1)
             }
-            if (row.index >= rowsToSelect - 1) {
+            if (row.index >= rowsToSelect - 1 && count >= rowsToSelect) {
                 setRowsToSelect(0)
+                setAvoidList([])
+                setCount(0)
             }
         })
         const prevRows = selectedRows || []
