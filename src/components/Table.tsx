@@ -3,13 +3,14 @@ import { DataTable } from 'primereact/datatable'
 import { Column } from 'primereact/column'
 import { OverlayPanel } from 'primereact/overlaypanel'
 import { Skeleton } from 'primereact/skeleton'
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import Pagination from './Pagination'
 import down_icon from '../assets/chevron-down.svg'
 import "primereact/resources/themes/lara-light-cyan/theme.css"
 
 interface Row {
-    id?: number,
+    index: number,
+    id: number,
     title?: string,
     place_of_origin?: string,
     artist_display?: string,
@@ -26,63 +27,35 @@ function Table() {
     const [selectedRows, setSelectedRows] = useState<Row[] | null>(null)
     const [totalRecords, setTotalRecords] = useState(1)
     const [input, setInput] = useState<string>('')
+    const [rowsToSelect, setRowsToSelect] = useState<number>(0)
 
     const op = useRef<OverlayPanel>(null)
 
-    async function fetchTableData(page: number): Promise<void> {
+    const fetchTableData = useCallback(async (): Promise<void> => {
+        const rowsPerPage = 12
+        let first = page * rowsPerPage
         const res = await fetch(`https://api.artic.edu/api/v1/artworks?page=${page + 1}`)
         const resData = await res.json()
-        setRows(resData.data)
+        const data = resData.data
+
+        data.forEach((row: Row[]) => {
+            if (!('index' in row)) {
+                Object.defineProperty(row, 'index', { value: first })
+                first++
+            }
+        })
+        setRows(data)
         setTotalRecords(parseInt(resData.pagination.total))
         setLoading(false)
-    }
+    }, [page])
 
-    async function submitHandler(totalRows: number): Promise<void> {
-        const totalPagesToFetch = Math.ceil(totalRows / 12)
-        let res, resData, data
-        let tempArr: object[] = []
-        const allRows: object[] = []
-        if (selectedRows !== null) {
-            tempArr = [...selectedRows]
-        }
-        for (let i = 0; i < totalPagesToFetch; i++) {
-            res = await fetch(`https://api.artic.edu/api/v1/artworks?page=${i + 1}`)
-            resData = await res.json()
-            data = resData.data
-            data.forEach((element: object): void => {
-                if (allRows.length < totalRows) {
-                    allRows.push(element)
-                }
-            })
-        }
-
-        for (let i = 0; i < allRows.length; i++) {
-            if (tempArr.includes(allRows[i])) {
-                break
-            }
-            tempArr.push(allRows[i])
-        }
-        setSelectedRows(tempArr)
+    function submitHandler() {
+        setRowsToSelect((parseInt(input)))
         op.current?.hide()
+        setInput('')
     }
 
-    const onSelectionChange = (e: { value: Row[] }) => {
-        const currentPageRows = rows.map(row => row.id)
-        let newSelectedRows: Row[] =[]
-        if (selectedRows !== null) {
-            newSelectedRows = [...selectedRows]
-        }
-
-        const filteredSelectedRows = newSelectedRows.filter(
-            row => !currentPageRows.includes(row.id)
-        )
-
-        const updatedSelection = [...filteredSelectedRows, ...e.value]
-
-        setSelectedRows(updatedSelection)
-    }
-
-    function inputHandler (e: React.ChangeEvent<HTMLInputElement>) {
+    function inputHandler(e: React.ChangeEvent<HTMLInputElement>) {
         if (parseInt(e.target.value) <= 0) {
             setInput('1')
         } else {
@@ -90,11 +63,31 @@ function Table() {
         }
     }
 
+    const spanSelectedRowsAcrossPages = useCallback( () => {
+        if (rowsToSelect === 0) {
+            return
+        }
+        const newSelectedRows: Row[] = []
+        rows.forEach(row => {
+            if ( row.index < rowsToSelect) {
+                newSelectedRows.push(row)
+            } else if ( row.index >= rowsToSelect) {
+                setRowsToSelect(0)
+            }
+        })
+        const prevSelectedRows = selectedRows?.slice() || []
+        setSelectedRows([...prevSelectedRows, ...newSelectedRows])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [rowsToSelect, rows])
+
     useEffect(() => {
         setLoading(true)
-        fetchTableData(page)
-    }, [page])
+        fetchTableData()
+    }, [fetchTableData])
 
+    useEffect(() => {
+        spanSelectedRowsAcrossPages()
+    },[spanSelectedRowsAcrossPages])
 
     const titleHeader = (
         <div className='title-header'>
@@ -105,24 +98,27 @@ function Table() {
             <OverlayPanel ref={op} >
                 <div className='input-container'>
                     <input type='number' value={input} onChange={inputHandler} placeholder='Select rows...' />
-                    <button onClick={() => submitHandler(parseInt(input))}>Submit</button>
+                    <button onClick={submitHandler}>Submit</button>
                 </div>
             </OverlayPanel>
         </div>
     )
 
+    console.log('selected rows are: ', selectedRows)
+
     return (
         <>
-            <DataTable 
-            value={rows} 
-            selectionMode="multiple" 
-            selection={selectedRows!} 
-            onSelectionChange={onSelectionChange} 
-            dataKey="id" 
-            scrollable 
-            scrollHeight="flex"
-            tableStyle={{ minWidth: '50rem' }}
-            emptyMessage={loading ? <Skeleton /> : 'No data found'}>
+            <DataTable
+                value={rows}
+                selectionMode="multiple"
+                selectionPageOnly={true}
+                selection={selectedRows!}
+                onSelectionChange={(e) => setSelectedRows(e.value)}
+                dataKey="id"
+                scrollable
+                scrollHeight="flex"
+                tableStyle={{ minWidth: '50rem' }}
+                emptyMessage={loading ? <Skeleton /> : 'No data found'}>
                 <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} body={<Skeleton />}></Column>
                 <Column field="title" header={titleHeader} body={loading ? <Skeleton width="10rem" /> : undefined}></Column>
                 <Column field="place_of_origin" header="Place Of Origin" body={loading ? <Skeleton /> : undefined}></Column>
